@@ -2,3 +2,5 @@ data/
 *.DS_Store
 training_data/
 training_data.dat
+*.p
+.idea/
