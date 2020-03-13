@@ -3,6 +3,11 @@
 The task is to perform video action classification on the [Breakfast actions dataset](https://serre-lab.clps.brown.edu/resource/breakfast-actions-dataset/).
 This dataset includes 1712 videos and shows activities related to breakfast preparation.
 
+## Usage
+
+- Run `read_datasetBreakfast.py` to store the frames and the corresponding labels from the training data into a `pickle` file. This outputs `training_data.dat`.
+- ~~Run `preprocessing/create_segment.py` to get the start indices of segments in the training data. This outputs `preprocessing/train_segments.txt`.~~ Use given `training_segment.txt` and `test_segment.txt` files instead.
+
 ## Data
 
 - `data`: The video data can be downloaded from [here](https://drive.google.com/drive/folders/1KtpuFYRGXByf_9ICPsCbGRBoR_hLsruh).
