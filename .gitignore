@@ -6,7 +6,11 @@ data/
 training_data/
 training_data.dat
 *.p
+<<<<<<< HEAD
 
 results/
 
 *.ipynb_checkpoints*
+
+.idea/
+Icon
