@@ -1,6 +1,10 @@
-data/
 *.DS_Store
+
+.idea/
+
+data/
 training_data/
 training_data.dat
 *.p
-.idea/
+
+*.ipynb_checkpoints/*
