@@ -7,4 +7,6 @@ training_data/
 training_data.dat
 *.p
 
-*.ipynb_checkpoints/*
+results/
+
+*.ipynb_checkpoints*
