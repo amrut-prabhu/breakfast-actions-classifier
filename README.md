@@ -6,6 +6,7 @@ This dataset includes 1712 videos and shows activities related to breakfast prep
 ## Usage
 
 - Run `read_datasetBreakfast.py` to store the frames and the corresponding labels from the training data into a `pickle` file. This outputs `training_data.dat`.
+- Run `create_validation_data.py`. This splits data in `training.dat` into `trimmed_training_data.p` and `validation_data.p` using a 80-20 ratio.
 - ~~Run `preprocessing/create_segment.py` to get the start indices of segments in the training data. This outputs `preprocessing/train_segments.txt`.~~  
 Use given `training_segment.txt` and `test_segment.txt` files instead.
 
