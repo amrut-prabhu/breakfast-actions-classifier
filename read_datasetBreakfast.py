@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jul 23 12:58:28 2019
-
-@author: fame
-"""
 import os
 import torch
 import pickle
 import numpy as np
 import os.path
+
+import sklearn
+from sklearn.model_selection import train_test_split
+
+
+RAW_TRAINING_DATA_FILE = 'raw_training_data.p'
+UNSORTED_TRAINING_DATA_FILE = 'unsorted_training_data.p'
+TRAINING_DATA_FILE = 'training_data.p'
+VALIDATION_DATA_FILE = 'validation_data.p'
+TESTING_DATA_FILE = 'testing_data.p'
 
 
 def _isArrayLike(obj):
@@ -21,7 +26,10 @@ def load_data(split_load, actions_dict, GT_folder, DATA_folder, datatype='traini
     content_all = [x.strip('./data/groundTruth/') + 't' for x in content_all]
 
     if datatype == 'training':
-        data_breakfast_train_file = open('training_data.p', 'wb')
+        print("==================================================")
+        print("CREATING RAW TRAINING DATA FILE")
+
+        data_breakfast_train_file = open(RAW_TRAINING_DATA_FILE, 'wb')
 
         data_breakfast = []
         labels_breakfast = []
@@ -59,11 +67,14 @@ def load_data(split_load, actions_dict, GT_folder, DATA_folder, datatype='traini
             print(f'[{idx}] {content} contents dumped')
 
         labels_uniq, labels_uniq_loc = get_label_bounds(labels_breakfast)
-        print("Finished loading the training data and labels!!!")
+        print("Finished loading the training data and labels!")
         return data_breakfast, labels_uniq
 
     if datatype == 'test':
-        data_breakfast_test_file = open('testing_data.p', 'wb')
+        print("==================================================")
+        print("CREATING TESTING DATA FILE")
+
+        data_breakfast_test_file = open(TESTING_DATA_FILE, 'wb')
 
         data_breakfast = []
 
@@ -90,7 +101,7 @@ def load_data(split_load, actions_dict, GT_folder, DATA_folder, datatype='traini
 
             print(f'[{idx}] {content} contents dumped')
 
-        print("Finished loading the test data!!!")
+        print("Finished loading the test data!")
         return data_breakfast
 
 
@@ -146,10 +157,105 @@ def read_mapping_dict(mapping_file):
     return actions_dict
 
 
+def create_validation_data():
+    print("==================================================")
+    print("CREATING TRAINING AND VALIDATION DATA FILES")
+
+    f = open(RAW_TRAINING_DATA_FILE, "rb")
+
+    training_data_inputs = []
+    training_data_true_outputs = []
+    counter = 1
+    while True:
+        try:
+            (segment, label) = pickle.load(f)
+        
+            if counter % 100 == 0:
+                print(f"at sample: {counter}")
+            training_data_inputs.append(segment)
+            training_data_true_outputs.append(label)
+            counter += 1
+        except (EOFError):
+            break
+
+    f.close()
+
+    X_train, X_val, y_train, y_val = train_test_split(training_data_inputs, 
+                training_data_true_outputs, test_size=0.2, random_state=42)
+
+
+    print(len(X_train))
+    print(len(X_val))
+
+    # Store training data
+    training_out = open(UNSORTED_TRAINING_DATA_FILE, 'wb')
+
+    counter = 1
+    for i, segment  in enumerate(X_train):
+        if counter % 100 == 0:
+            print(f"dumping sample {counter} in {training_out}") 
+        pickle.dump((segment, y_train[i]), training_out)
+        counter += 1
+    training_out.close()
+
+    # Store validation data
+    validation_out = open(VALIDATION_DATA_FILE, 'wb')
+
+    counter = 1
+    for i, segment in enumerate(X_val):
+        if counter % 100 == 0:
+            print(f"dumping sample {counter} in {validation_out}")
+        pickle.dump((segment, y_val[i]), validation_out)
+        counter += 1
+
+    validation_out.close()
+
+
+def sort_training_data():
+    print("==================================================")
+    print("CREATING TRAINING DATA FILE SORTED BY SEGMENT LENGTH")  
+
+    f = open(UNSORTED_TRAINING_DATA_FILE, "rb")
+
+    segments = []
+    labels = []
+    segment_lengths = []
+
+    segment_idx  = 0
+    while True:
+        try:
+            (segment, label) = pickle.load(f)
+
+            if segment_idx % 300 == 0:
+                print(f"at sample: {segment_idx }")
+
+            segments.append(segment)
+            labels.append(label)
+            segment_lengths.append((segment_idx , len(segment)))
+
+            segment_idx  += 1
+        except (EOFError):
+            break
+
+    f.close()
+
+    sorted_segment_lengths = sorted(segment_lengths, key=lambda tup: tup[1])
+
+    # Store sorted training data
+    training_out = open(TRAINING_DATA_FILE, 'wb')
+
+    counter = 1
+    for (idx, length) in sorted_segment_lengths:
+        if counter % 300 == 0:
+            print(f"dumping sample {counter} in {training_out}") 
+
+        pickle.dump((segments[idx], labels[idx]), training_out)
+        counter += 1
+
+    training_out.close()
+
 if __name__ == "__main__":
     COMP_PATH = ''
-    # split = 'training'
-    split = 'test'
     train_split = os.path.join(COMP_PATH, 'splits/train.split1.bundle')
     test_split = os.path.join(COMP_PATH, 'splits/test.split1.bundle')
     GT_folder = os.path.join(COMP_PATH, 'groundTruth/')
@@ -157,7 +263,14 @@ if __name__ == "__main__":
     mapping_loc = os.path.join(COMP_PATH, 'splits/mapping_bf.txt')
 
     actions_dict = read_mapping_dict(mapping_loc)
-    if split == 'training':
-        data_feat, data_labels = load_data(train_split, actions_dict, GT_folder, DATA_folder, datatype=split)
-    if split == 'test':
-        data_feat = load_data(test_split, actions_dict, GT_folder, DATA_folder, datatype=split)
+
+
+    split = 'training'
+    data_feat, data_labels = load_data(train_split, actions_dict, GT_folder, DATA_folder, datatype=split)
+    
+    split = 'test'
+    data_feat = load_data(test_split, actions_dict, GT_folder, DATA_folder, datatype=split)
+
+    create_validation_data()
+
+    sort_training_data()
