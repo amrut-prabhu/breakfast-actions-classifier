@@ -5,9 +5,20 @@ This dataset includes 1712 videos and shows activities related to breakfast prep
 
 ## Usage
 
-- Run `read_datasetBreakfast.py` to store the frames and the corresponding labels from the training data into a `pickle` file. This outputs `training_data.dat`.
-- ~~Run `preprocessing/create_segment.py` to get the start indices of segments in the training data. This outputs `preprocessing/train_segments.txt`.~~  
-Use given `training_segment.txt` and `test_segment.txt` files instead.
+### Data processing
+
+Run `read_datasetBreakfast.py` to process the raw i3D data files. It stores the segments (containing i3D frames) and the corresponding labels into binary `pickle` files. 
+
+```sh
+python read_datasetBreakfast.py
+```
+
+Outputs:
+- `raw_training_data.p`: Training data with 7075 `(segment, label)` tuples.
+- `unsorted_training_data.p`: Training data containing 80% of `raw_training_data.p` (5660 samples).
+- `training_data.p`: Final training dataset with `(segment, label)` sorted in increasing order of segment lengths.
+- `validation_data.p`: Validation data with `(segment, label)` containing 20% of `raw_training_data.p` (1415 samples).
+- `testing_data.p`: Test data with only segments and no labels (1536, but should be 1284).
 
 ## Data
 
