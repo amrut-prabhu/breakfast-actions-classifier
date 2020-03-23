@@ -88,7 +88,6 @@ def load_data(split_load, actions_dict, GT_folder, DATA_folder, datatype='traini
             # load data into memory
             curr_data = np.loadtxt(loc_curr_data, dtype='float32')
             data_breakfast.append(torch.tensor(curr_data, dtype=torch.float64))
-            pickle.dump(torch.tensor(curr_data, dtype=torch.float64), data_breakfast_test_file)
 
             # dump (segment, label) for current file into pickle
             curr_segment_ids = segment_ids[idx].split()
