@@ -6,7 +6,9 @@ data/
 training_data/
 training_data.dat
 *.p
-<<<<<<< HEAD
+
+# Models to be run remotely
+models/RNN.py
 
 results/
 
