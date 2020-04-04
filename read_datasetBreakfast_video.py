@@ -63,10 +63,10 @@ def load_data(split_load, actions_dict, GT_folder, DATA_folder, datatype='traini
 
                 curr_segment_frames = curr_data[start_segment_idx:end_segment_idx]
                 curr_segment_label = label_curr_video[start_segment_idx]
-                video_segments.append((torch.tensor(curr_segment_frames, dtype=torch.float64), curr_segment_label))
+                video_segments.append(torch.tensor(curr_segment_frames, dtype=torch.float64), curr_segment_label)
             
             pickle.dump(video_segments ,data_breakfast_train_file)
-            print(f'[{idx}] {content} contents dumped')
+            print('[{}] {} contents dumped'.format(idx, content))
 
         labels_uniq, labels_uniq_loc = get_label_bounds(labels_breakfast)
         print("Finished loading the training data and labels!")
@@ -103,7 +103,7 @@ def load_data(split_load, actions_dict, GT_folder, DATA_folder, datatype='traini
                 video_segments.append((torch.tensor(curr_segment_frames, dtype=torch.float64)))
 
             pickle.dump(video_segments ,data_breakfast_test_file)
-            print(f'[{idx}] {content} contents dumped')
+            print('[{}] {} contents dumped'.format(idx, content))
 
         print("Finished loading the test data!")
         return data_breakfast
@@ -175,7 +175,7 @@ def create_validation_data():
             video_segments = pickle.load(f)
         
             if counter % 10 == 0:
-                print(f"at sample: {counter}")
+                print('at sample: {}'.format(counter))
 
             training_data.append(video_segments)
             counter += 1
@@ -197,7 +197,7 @@ def create_validation_data():
     counter = 1
     for i, video  in enumerate(X_train):
         if counter % 10 == 0:
-            print(f"dumping sample {counter} in {training_out}") 
+            print('dumping sample {} in {}'.format(counter, training_out)) 
         pickle.dump(video, training_out)
         counter += 1
     training_out.close()
@@ -208,7 +208,7 @@ def create_validation_data():
     counter = 1
     for i, video in enumerate(X_val):
         if counter % 10 == 0:
-            print(f"dumping sample {counter} in {validation_out}")
+            print('dumping sample {} in {}'.format(counter, validation_out))
         pickle.dump(video, validation_out)
         counter += 1
 
