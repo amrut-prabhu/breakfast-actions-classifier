@@ -4,14 +4,14 @@ import torch
 import pickle
 import numpy as np
 import os.path
+from os import path
 
 import sklearn
 from sklearn.model_selection import train_test_split
 
 
 RAW_TRAINING_DATA_FILE = 'video_raw_training_data.p'
-UNSORTED_TRAINING_DATA_FILE = 'video_training_data.p'
-TRAINING_DATA_FILE = 'video_sorted_training_data.p'
+TRAINING_DATA_FILE = 'video_training_data.p'
 VALIDATION_DATA_FILE = 'video_validation_data.p'
 TESTING_DATA_FILE = 'video_testing_data.p'
 
@@ -63,7 +63,7 @@ def load_data(split_load, actions_dict, GT_folder, DATA_folder, datatype='traini
 
                 curr_segment_frames = curr_data[start_segment_idx:end_segment_idx]
                 curr_segment_label = label_curr_video[start_segment_idx]
-                video_segments.append(torch.tensor(curr_segment_frames, dtype=torch.float64), curr_segment_label)
+                video_segments.append((torch.tensor(curr_segment_frames, dtype=torch.float64), curr_segment_label))
             
             pickle.dump(video_segments ,data_breakfast_train_file)
             print('[{}] {} contents dumped'.format(idx, content))
@@ -100,7 +100,7 @@ def load_data(split_load, actions_dict, GT_folder, DATA_folder, datatype='traini
                 end_segment_idx = int(curr_segment_ids[i + 1])
 
                 curr_segment_frames = curr_data[start_segment_idx:end_segment_idx]
-                video_segments.append((torch.tensor(curr_segment_frames, dtype=torch.float64)))
+                video_segments.append(torch.tensor(curr_segment_frames, dtype=torch.float64))
 
             pickle.dump(video_segments ,data_breakfast_test_file)
             print('[{}] {} contents dumped'.format(idx, content))
@@ -192,7 +192,7 @@ def create_validation_data():
     print(len(X_val))
 
     # Store training data
-    training_out = open(UNSORTED_TRAINING_DATA_FILE, 'wb')
+    training_out = open(TRAINING_DATA_FILE, 'wb')
 
     counter = 1
     for i, video  in enumerate(X_train):
@@ -215,48 +215,44 @@ def create_validation_data():
     validation_out.close()
 
 
-# def sort_training_data():
-#     print("==================================================")
-#     print("CREATING TRAINING DATA FILE SORTED BY SEGMENT LENGTH")  
+def save_files(DATA_FILE):
+    data_dir = DATA_FILE.split('.')[0]
 
-#     f = open(UNSORTED_TRAINING_DATA_FILE, "rb")
+    print("\n\n=====================================================")
+    print("CREATING", DATA_FILE, "DIR")
 
-#     segments = []
-#     labels = []
-#     segment_lengths = []
+    if not path.exists(data_dir):
+        os.mkdir(data_dir)
 
-#     segment_idx  = 0
-#     while True:
-#         try:
-#             (segment, label) = pickle.load(f)
+    f = open(DATA_FILE, "rb")
 
-#             if segment_idx % 300 == 0:
-#                 print(f"at sample: {segment_idx }")
+    counter = 0
+    while True:
+        try:
+            video = pickle.load(f)
 
-#             segments.append(segment)
-#             labels.append(label)
-#             segment_lengths.append((segment_idx , len(segment)))
+            video_out = open(data_dir + '/' + str(counter) + '.p', 'wb')
+            pickle.dump(video, video_out)
+            video_out.close()
 
-#             segment_idx  += 1
-#         except (EOFError):
-#             break
+            if counter % 10 == 0:
+                print('at sample: {}'.format(counter))
 
-#     f.close()
+            counter += 1
+        except (EOFError):
+            break
 
-#     sorted_segment_lengths = sorted(segment_lengths, key=lambda tup: tup[1])
+    f.close()
 
-#     # Store sorted training data
-#     training_out = open(TRAINING_DATA_FILE, 'wb')
 
-#     counter = 1
-#     for (idx, length) in sorted_segment_lengths:
-#         if counter % 300 == 0:
-#             print(f"dumping sample {counter} in {training_out}") 
+def save_as_files_in_dir():
+    # Save videos as individual files so data can be shuffled during training
+    save_files(TRAINING_DATA_FILE)
 
-#         pickle.dump((segments[idx], labels[idx]), training_out)
-#         counter += 1
+    # # No need to save as separate files and they are unaffected by shuffle
+    # save_files(VALIDATION_DATA_FILE)
+    # save_files(TESTING_DATA_FILE)
 
-#     training_out.close()
 
 if __name__ == "__main__":
     COMP_PATH = ''
@@ -268,7 +264,6 @@ if __name__ == "__main__":
 
     actions_dict = read_mapping_dict(mapping_loc)
 
-
     split = 'training'
     data_feat, data_labels = load_data(train_split, actions_dict, GT_folder, DATA_folder, datatype=split)
     
@@ -277,4 +272,4 @@ if __name__ == "__main__":
 
     create_validation_data()
 
-    # sort_training_data()
+    save_as_files_in_dir()
